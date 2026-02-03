@@ -1,0 +1,409 @@
+1. Print the prime numbers between 1 and 100.
+    - Write a program that uses nested loops (for or while).
+    - The outer loop should iterate through every number from 2 to 100.
+    - The inner loop should check if the current number is divisible by any number other than 1 and itself.
+    - If a number is found to be prime (it has no divisors other than 1 and itself), print it.
+
+2. Write a program that iterates through the numbers from 1 to 20 using a for loop. Inside the loop, use the continue statement to skip any odd numbers. Calculate and print the sum of only the even numbers encountered.
+
+3. Write a program that asks the user for a size N (eg., 5) and prints a hollow square of stars with side length N.
+
+Example for N = 5:
+
+*****
+*   *
+*   *
+*   *   
+*****
+
+
+PART B: Undo a LOCAL Commit (Using git reset)
+Note: Do this only if not pushed
+Step 5: Create a local mistake
+	  echo "LOCAL MISTAKE" >> app.txt
+      git status
+      cat app.txt
+      git add app.txt
+      git status
+      git commit -m "Local bad commit"
+      git status
+      git log --oneline
+	  
+Step 6: Undo commit and keep file changes
+		git reset --soft HEAD~1
+	Commit removed
+	Changes still staged
+	
+Step 7: Undo commit and remove changes completely
+       git reset --hard HEAD
+
+Step 1: Check if SSH key already exists
+ls ~/.ssh
+
+Step 2: Generate a SSH key
+ssh-keygen -t ed25519 -C "aditik@gmail.com"
+
+Expected Output
+~/.ssh/id_ed25519 (private key)
+~/.ssh/id_ed25519.pub (public key)
+
+----------------------------------------------------------------
+Step 2: Execute below commands
+1. Update the system package
+sudo apt update
+
+Note: This command refreshes package index to ensure that outdated
+indexes will not break installs
+
+2. Install Java (JDK)
+sudo apt install openjdk-11-jdk -y
+
+Note: what gets installed
+. java - runtime
+. javac - compiler
+. standard java libraries
+
+3. Verify the output
+java -version
+
+4. Install maven
+sudo apt install maven -y
+
+What Maven does
+. Downloads dependencies
+. Compiles Java code
+. Packages JAR/WAR files
+. Publishes artifacts
+
+5. verify the installation
+mvn -version
+
+6. Create a Maven project
+mvn archetype:generate \
+  -DgroupId=com.ec2demo \
+  -DartifactId=ec2-maven-app \
+  -DarchetypeArtifactId=maven-archetype-quickstart \
+  -DinteractiveMode=false
+
+Note: this command will generate a standard java project sturture
+automatically.
+
+7. Understand the project structure
+Install tree utility
+sudo apt install tree
+tree
+
+8. Update the Application Code
+Edit the Main class
+nano src/main/java/com/ec2demo/App.java
+
+9. Build the Application Artifact
+mvn clean package
+
+Note: 
+Clean 		Delete old builds
+compile		Compiles java
+test		Run unit tests
+package		Create jar
+
+Note: If you get error related to java compiler version. Add below
+configuration after dependency tag in pom.xml
+<build>
+        <plugins>
+
+            <!-- Explicit compiler plugin (best practice) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <source>11</source>
+                    <target>11</target>
+                </configuration>
+            </plugin>
+
+            <!--  Makes the JAR executable -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.3.0</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.ec2demo.App</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
+
+
+-----------------------------------------------------------------------------------
+
+version: "3"
+services:
+  web:
+    image: nginx
+    ports:
+      - "8080:80"
+
+
+
+-------------------------------------------
+
+docker installation user data
+
+#!/bin/bash
+set -e
+
+# Update package index
+apt-get update -y
+
+# Install required packages to use apt over HTTPS
+apt-get install -y \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release
+
+# Create keyring directory for Docker
+install -m 0755 -d /etc/apt/keyrings
+
+# Add Docker’s official GPG key
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
+    gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+chmod a+r /etc/apt/keyrings/docker.gpg
+
+# Add the Docker apt repository
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+  https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}") stable" \
+  > /etc/apt/sources.list.d/docker.list
+
+# Update apt package index again with the new repo
+apt-get update -y
+
+# Install Docker Engine and related packages
+apt-get install -y \
+    docker-ce \
+    docker-ce-cli \
+    containerd.io \
+    docker-buildx-plugin \
+    docker-compose-plugin
+
+# Enable and start Docker
+systemctl enable docker
+systemctl start docker
+
+# (Optional) Add default ubuntu user to docker group
+usermod -aG docker ubuntu
+
+# Show installed Docker version
+docker --version
+
+
+
+-------------------------------------------------------
+
+Demo: 
+1. Run a tiny web server
+2. Add a docker health check
+3. Watch it run healthy -> unhealthy
+
+Step 1: Create a Simple App
+A container that runs python HTTP server on port 80
+
+mkdir health-demo  && cd health-demo
+
+#Create Dockerfile
+FROM python:3.10-slim
+
+WORKDIR /app
+
+#Simple web server
+CMD python -m http.server 8080
+
+# Health check
+HEALTHCHECK --interval=10s --timeout=3s --retries=3 \
+CMD curl -f http://localhost:8080 || exit 1
+
+-----------------------------------------------
+. Build the image
+docker build -t health-demo .
+
+. Run the container
+docker run -d --name health-test -p 8080:8080 health-demo
+
+. Check status
+docker ps
+
+. Inspect the health check
+docker inspect --format='{{.State.Health.Status}}' health-test
+
+
+--------------------------------------------------------
+
+create cluster
+
+eksctl create cluster \
+  --name demo-cluster-2 \
+  --region ap-south-1 \
+  --nodes 1 \
+  --node-type t3.micro \
+  --managed \
+  --with-oidc=false
+
+
+-------------------------------------------------
+
+delete cluster
+
+eksctl delete cluster \
+--name demo-eks \
+--region us-east-1
+
+
+------------------------------------------------------------
+
+Step 1: Check the prerequisites
+aws --version
+kubectl version --client
+eksctl version
+
+Note: If eksctl is not installed
+ # for ARM systems, set ARCH to: `arm64`, `armv6` or `armv7`
+ARCH=amd64
+PLATFORM=$(uname -s)_$ARCH
+
+curl -sLO "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$PLATFORM.tar.gz"
+
+# (Optional) Verify checksum
+curl -sL "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_checksums.txt" | grep $PLATFORM | sha256sum --check
+
+tar -xzf eksctl_$PLATFORM.tar.gz -C /tmp && rm eksctl_$PLATFORM.tar.gz
+
+sudo install -m 0755 /tmp/eksctl /usr/local/bin && rm /tmp/eksctl
+---------------------------------------------
+Step 2: Create the cluster using below command
+eksctl create cluster \
+  --name demo-eks \
+  --region us-east-1 \
+  --zones us-east-1a,us-east-1b \
+  --nodes 1 \
+  --node-type t3.small \
+  --managed \
+  --vpc-nat-mode Disable
+
+-----------------------------
+
+eksctl delete cluster \
+--name demo-eks \
+--region us-east-1
+
+
+
+Step 1: Check the prerequisites
+aws --version
+kubectl version --client
+eksctl version
+
+Note: If eksctl is not installed
+ # for ARM systems, set ARCH to: `arm64`, `armv6` or `armv7`
+ARCH=amd64
+PLATFORM=$(uname -s)_$ARCH
+
+curl -sLO "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_$PLATFORM.tar.gz"
+
+# (Optional) Verify checksum
+curl -sL "https://github.com/eksctl-io/eksctl/releases/latest/download/eksctl_checksums.txt" | grep $PLATFORM | sha256sum --check
+
+tar -xzf eksctl_$PLATFORM.tar.gz -C /tmp && rm eksctl_$PLATFORM.tar.gz
+
+sudo install -m 0755 /tmp/eksctl /usr/local/bin && rm /tmp/eksctl
+---------------------------------------------
+Step 2: Create the cluster using below command
+eksctl create cluster \
+  --name demo-eks-new \
+  --region us-east-1 \
+  --zones us-east-1a,us-east-1b \
+  --nodes 1 \
+  --node-type t3.small \
+  --managed \
+  --vpc-nat-mode Disable
+
+-------------------------------------------
+
+#ngnix-pod.yaml
+
+kind: Pod
+metadata:
+  name: nginx-pod
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+	resources:
+	  requests:
+	    cpu: "50m"
+		memory: "64mi"
+	  limits:
+	    cpu: "100m"
+		memory: "128mi"
+---------------------------------------------
+kubectl apply -f nginx-pod.yaml
+kubectl get pods  # to verify
+
+
+---------------------------------------------
+# Apply command
+kubectl apply -f <deployment.yaml>
+
+# Testing the self healing behaviour
+kubectl delete pod -l app=nginx
+
+#delete a deployment
+kubectl delete deployment <deployment-name>
+
+----------------------------------------------
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+	resources:
+	  requests:
+	    cpu: "50m"
+	    memory: "64Mi"
+	  limits:
+	    cpu: "100m"
+	    memory: "128Mi"
+---------------------------------------------------------
+
+jenkins password- ce1e9bb669e94d7b9e610da9ff5d1122
+
+--------------------------------------------------------
+
+aws s3 cp s3://jenkins-s3-simple/aws s3 cp s3://bucket-name/path/to/file.txt /local/path/
+ /home/ubuntu
+
+
+---------------------------------
+demo 
+1. Move the source code to EC2 instance
+Hint: S3 bucket
+      scp (ssh-keygen)
+	  Filezilla
+	  winscp
+	  
+2. On EC2 install maven execute mvn clean test to check if test cases are executed successfully
+3. initialize the directory as git directory
+4. Move this code in a github repo (create an empty repository)
+git remote add origin https://<GITHUB_USERNAME>:<PAT_TOKEN>@github.com/<GITHUB_USERNAME>/<REPO_NAME>.git
